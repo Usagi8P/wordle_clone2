@@ -51,6 +51,15 @@
   text-align: center;
   width: 34px;
 }
+.Square.wrong_letter{
+  background: #888888;
+}
+.Square.correct_letter{
+  background: #ffc400;
+}
+.Square.correct_location{
+  background: #00a608;
+}
 
 .guessRow{
   width: 180px;

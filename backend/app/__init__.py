@@ -18,7 +18,6 @@ def create_app():
     @app.route('/validate-guess', methods=['POST'])
     def validate_guess():
         data = request.json
-        print(data)
         guess = ''.join(data['currentGuess'])
         
         possible_words = os.path.join(os.path.dirname(__file__), 'possible_words.txt')
@@ -30,7 +29,12 @@ def create_app():
         solution_word = session['solution_word']
 
         if guess == solution_word:
-            return {'result':'correct'}
+            return_data = {'result':'correct'}
+
+            for i,_ in enumerate(guess):
+                return_data[f'letter{i}'] = 'correct_location'
+
+            return return_data
         
         if guess in words:
             return_data = {'result':'valid'}
