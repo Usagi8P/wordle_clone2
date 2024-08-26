@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 
 import {useEffect, useState} from 'react';
@@ -86,7 +85,6 @@ function Board( {guessHistory, hintHistory} ) {
 }
 
 function App() {
-  // The array is one element longer to hide user input when the game is over.
   const [guessHistory, setGuessHistory] = useState(Array(6).fill(Array(5).fill(null)));
   const [hintHistory, setHintHistory] = useState(Array(6).fill(Array(5).fill(null)));
   const [guessIndex, setGuessIndex] = useState(0);
@@ -225,19 +223,10 @@ function App() {
         </div>)
     }
   }
-  
-  const [hello, setHello] = useState('test');
-  useEffect (() => {
-    fetch('/hello').then(res => res.json()).then(data => {
-      setHello(data.return);
-    });
-  },[]);
-
 
   return (
     <>
       {!gameOver && <KeyboardListener onKeyPress={handleKeyboardInput} /> }
-      <div>{hello}</div>
       <div>
         {showFlash && (
           <div> {flashMessage} </div>
