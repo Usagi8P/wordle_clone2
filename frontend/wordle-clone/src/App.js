@@ -6,9 +6,13 @@ import {useEffect, useState} from 'react';
 function KeyboardListener({ onKeyPress }) {
   useEffect(() => {
     const handleKeyDown = (event) => {
+      if (event.key === 'Backspace') {
+        event.preventDefault()
+      }
       if (event.key === 'Enter') {
         event.preventDefault();
       }
+
       onKeyPress(event);
     };
 
@@ -127,12 +131,12 @@ function App() {
     }, duration);
   };
 
-  const validateGuess = async(currentGuess) => {    
+  const validateGuess = async(currentGuess, guessIndex) => {    
     try {
       const response = await fetch('/validate-guess',{
         method:'POST',
         headers:{'Content-Type':'application/json',},
-        body: JSON.stringify({ currentGuess })
+        body: JSON.stringify({ currentGuess, guessIndex })
       });
       
       const data = await response.json();
@@ -162,7 +166,7 @@ function App() {
         showFlashMessage('Too short');
         return;
       } else {
-          validateGuess(currentGuess)
+          validateGuess(currentGuess, guessIndex)
             .then(data => {
               if (data.result === 'valid') {
                 const newHintHistory = [...hintHistory];
@@ -214,15 +218,16 @@ function App() {
   }
 
   const gameOverText = () => {
-    let gameOverMessage = "Try again! :) "
+    let gameOverMessage = "Try again!"
     if (response.result === 'correct' && gameOver) {
       gameOverMessage = "Congratulations!"
     }
     return(
-      <div className='absolute top-0 left-0 w-full h-full z-10 flex justify-center items-center -translate-y-1/4 font-serif'>
+      <div className='absolute top-0 left-0 w-full z-10 flex justify-center items-center translate-y-1/2 font-serif'>
         <div className='w-fit h-fit bg-white rounded-md border-solid border-2 border-slate-700'>
           <div className='font-black w-full text-5xl mt-5 p-5'>
-            {gameOverMessage}
+            <div>{gameOverMessage}</div>
+            <div>The answer was: {response.solutionWord}</div>
           </div>
           <div className='p-3'>
             <button onClick={resetGame} className='border-solid border-slate-700 text-slate-950 border-2 font-serif text-xl rounded-md px-1.5 py-1'>

@@ -1,7 +1,8 @@
-from flask import Flask, request, session
+from flask import Flask, request, session, render_template
 from flask_cors import CORS
 import os
 from random import choice
+from dotenv import load_dotenv
 
 def get_solution_word():
     fn_possible_words = os.path.join(os.path.dirname(__file__), 'possible_words.txt')
@@ -12,9 +13,14 @@ def get_solution_word():
     return choice(words)
 
 def create_app(test_config=None):
-    app = Flask(__name__, instance_relative_config=True)
+    load_dotenv()
+
+    app = Flask(__name__, instance_relative_config=True,
+               static_folder='../../frontend/wordle-clone/build',
+               template_folder='../../frontend/wordle-clone/build')
     app.config.from_mapping(
-        SECRET_KEY='dev'
+        SECRET_KEY=os.getenv('SECRET_KEY','dev'),
+        ENV = os.getenv('ENV','dev')
     )
 
     if test_config is None:
@@ -22,7 +28,8 @@ def create_app(test_config=None):
     else:
         app.config.from_mapping(test_config)
     
-    CORS(app)
+    if app.config['ENV'] == 'dev':
+        CORS(app)
 
     @app.before_request
     def before_request():
@@ -32,6 +39,16 @@ def create_app(test_config=None):
     @app.route('/hello')
     def hello_world():
         return {'return':'Hello World!'}
+    
+    @app.route('/')
+    def serve():
+        return render_template('index.html')
+    
+    @app.route('/<path:path>')
+    def static_proxy(path):
+        if os.path.exists(os.path.join(app.static_folder, path)):
+            return app.send_static_file(path)
+        return app.send_static_file('index.html')
     
     @app.route('/reset-game', methods=['POST'])
     def reset_game():
@@ -44,6 +61,9 @@ def create_app(test_config=None):
     def validate_guess():
         data = request.json
         guess = ''.join(data['currentGuess'])
+        final_guess = False
+        if data['guessIndex'] == 5:
+            final_guess = True
         
         fn_possible_words = os.path.join(os.path.dirname(__file__), 'possible_words.txt')
 
@@ -53,7 +73,9 @@ def create_app(test_config=None):
         solution_word = session['solution_word']
 
         if guess == solution_word:
-            return_data = {'result':'correct'}
+            return_data = {'result':'correct',
+                           'solutionWord': solution_word}
+
 
             for i,_ in enumerate(guess):
                 return_data[f'letter{i}'] = 'correct_location'
@@ -61,7 +83,8 @@ def create_app(test_config=None):
             return return_data
         
         if guess in words:
-            return_data = {'result':'valid'}
+            return_data = {'result':'valid',
+                           'solutionword':'hiden'}
             
             for i,letter in enumerate(guess):
                 return_data[f'letter{i}'] = 'wrong_letter'
@@ -69,6 +92,9 @@ def create_app(test_config=None):
                     return_data[f'letter{i}'] = 'correct_letter'
                 if letter == solution_word[i]:
                     return_data[f'letter{i}'] = 'correct_location'
+
+            if final_guess:
+                return_data['solutionWord'] = solution_word
             
             return return_data
         
