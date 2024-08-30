@@ -96,13 +96,26 @@ function App() {
   const [showFlash, setShowFlash] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   
-  const resetGame = () => {
-    setGuessIndex(0);
-    setGameOver(false);
-    const newGuessHistory = Array(6).fill(Array(5).fill(null));
-    setGuessHistory(newGuessHistory);
-    const newHintHistory = Array(6).fill(Array(5).fill(null));
-    setHintHistory(newHintHistory);
+  const resetGame = async() => {
+    try {
+      const response = await fetch('/reset-game',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'}
+      });
+      
+      const data = await response.json();
+      
+      setGuessIndex(0);
+      setGameOver(false);
+      const newGuessHistory = Array(6).fill(Array(5).fill(null));
+      setGuessHistory(newGuessHistory);
+      const newHintHistory = Array(6).fill(Array(5).fill(null));
+      setHintHistory(newHintHistory);
+
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
   }
 
   const showFlashMessage = (message, duration = 2000) => {
@@ -208,7 +221,7 @@ function App() {
     return(
       <div className='absolute top-0 left-0 w-full h-full z-10 flex justify-center items-center -translate-y-1/4 font-serif'>
         <div className='w-fit h-fit bg-white rounded-md border-solid border-2 border-slate-700'>
-          <div className='font-black w-full text-5xl mt-5 p-5 justify-self-center'>
+          <div className='font-black w-full text-5xl mt-5 p-5'>
             {gameOverMessage}
           </div>
           <div className='p-3'>
